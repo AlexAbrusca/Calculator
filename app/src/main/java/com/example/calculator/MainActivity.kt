@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calculator.ui.theme.CalculatorTheme
-
+import com.example.calculator.ui.theme.Key
+import com.example.calculator.ui.theme.keyLogic
 
 
 class MainActivity : ComponentActivity() {
@@ -36,13 +36,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+
 @Composable
 fun Calculator(){
-    var display by remember { mutableStateOf("") }
     var num1 by remember { mutableStateOf(0.0) }
     var num2 by remember { mutableStateOf(0.0) }
     var result by remember { mutableStateOf(0.0) }
-    var operator by remember { mutableStateOf("")}
+    var operator by remember { mutableStateOf("+")}
+    var display by remember { mutableStateOf("") }
+    val mlist  by remember { mutableStateOf(mutableListOf<Double>()) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -71,20 +74,26 @@ fun Calculator(){
             Key(text = "7") { display = buildString {
                 append(display)
                 append("7")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "7")
+            }
             Key(text = "8") { display = buildString {
                 append(display)
                 append("8")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "8")
+            }
             Key(text = "9") { display = buildString {
                 append(display)
                 append("9")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "9")
+            }
             Key(
                 text = "x",
                 color = MaterialTheme.colors.secondary
             ) {
-                num1 = display.toDouble()
+                if(display != "") num1 = mlist.fold(0.0){ total, n -> total + n}
                 display = ""
                 operator = "x"
             }
@@ -100,21 +109,26 @@ fun Calculator(){
             Key(text = "4") { display = buildString {
                 append(display)
                 append("4")
-            }}
+            }
+               keyLogic(mlist = mlist, display = display, operator = operator, text = "4")
+            }
             Key(text = "5") { display = buildString {
                 append(display)
                 append("5")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "5")
+            }
             Key(text = "6") { display = buildString {
                 append(display)
                 append("6")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "6")
+            }
             Key(text = "-",
                 color = MaterialTheme.colors.secondary
             ) {
-                num1 = display.toDouble()
-                display = ""
                 operator = "-"
+                display = ""
             }
         }
         Row (
@@ -128,21 +142,26 @@ fun Calculator(){
             Key(text = "1") { display = buildString {
                 append(display)
                 append("1")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "1")
+            }
             Key(text = "2") { display = buildString {
                 append(display)
                 append("2")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "2")
+            }
             Key(text = "3") { display = buildString {
                 append(display)
                 append("3")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "3")
+            }
             Key(text = "+",
                 color = MaterialTheme.colors.secondary
             ) {
-                num1 = display.toDouble()
-                display = ""
                 operator = "+"
+                display = ""
             }
         }
         Row (
@@ -159,24 +178,37 @@ fun Calculator(){
             Key(text = "0") { display = buildString {
                 append(display)
                 append("0")
-            }}
+            }
+                keyLogic(mlist = mlist, display = display, operator = operator, text = "0")
+            }
             Key(
                 text = "=",
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary)
             ) {
-                num2 = display.toDouble()
+                if (display != "") {
                 when(operator){
-                    "x" -> result = num1 * num2
-                    "-" -> result = num1 - num2
-                    "+" -> result = num1 + num2
-                    "/" -> result = num1 / num2
+                    "x" -> {
+                        num2 = display.toDouble()
+                        result = (num1 * num2)
+                        mlist.clear()
+                        mlist.add(result)
+                    }
+                    "/" -> {
+                        num2 = display.toDouble()
+                        result = (num1 / num2)
+                        mlist.clear()
+                        mlist.add(result)
+                    }
+                    "-","+" -> result = mlist.fold(0.0){ total, n -> total + n}
                 }
                 display = result.toString()
+                operator = "+"
+                }
             }
             Key(text = "/",
                 color = MaterialTheme.colors.secondary
             ) {
-                num1 = display.toDouble()
+                if(display != "") num1 = mlist.fold(0.0){ total, n -> total + n}
                 display = ""
                 operator = "/"
             }
@@ -191,29 +223,16 @@ fun Calculator(){
             Key(
                 text = "C",
                 color = Color.Red
-            ) { display = ""}
+            ) {
+                display = ""
+                mlist.clear()
+            }
         }
     }
 }
-@Composable
-fun Key (
-    color: Color = MaterialTheme.colors.background,
-    text: String,
-    colors: ButtonColors = ButtonDefaults.buttonColors(backgroundColor = Color.LightGray),
-    click: () -> Unit,
-){
-    Button(
-        click,
-        shape = CircleShape,
-        colors = colors
 
-    ) {
-        Text(text = text,
-            fontSize = 35.sp,
-            color = color
-            )
-    }
-}
+
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
